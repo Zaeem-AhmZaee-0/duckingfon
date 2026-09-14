@@ -1,0 +1,18 @@
+{
+  "name": "duckingfon",
+  "version": "1.0.0",
+  "description": "DuckingFon - An immersive, weather-reactive worldwide weather platform featuring 3D mascot Fon, living atmospheric environments, and Open-Meteo integration.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "author": "DuckingFon Engineering",
+  "license": "MIT"
+}

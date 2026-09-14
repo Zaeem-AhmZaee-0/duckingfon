@@ -1,0 +1,19 @@
+{
+  "name": "DuckingFon — Immersive Worldwide Weather",
+  "short_name": "DuckingFon",
+  "description": "The intelligent worldwide weather platform featuring 3D mascot Fon, living atmospheric environments, and hyper-local forecasts.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0f1d",
+  "theme_color": "#0a0f1d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["weather", "utilities", "lifestyle"]
+}
