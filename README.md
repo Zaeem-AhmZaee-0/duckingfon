@@ -1,144 +1,56 @@
-# 🦆 DuckingFon — Immersive Worldwide Weather Platform
+# DuckingFon
 
-> **A living, breathing worldwide weather experience where the entire environment, 3D mascot, lighting, and soundscape dynamically react to real-time meteorological conditions.**
+Weather brought to life: live forecasts and a weather-driven world with a **temporary procedural Fon proxy**. No production rig is included or represented as finished.
 
-[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6-purple?logo=vite)](https://vitejs.dev/)
-[![Three.js](https://img.shields.io/badge/Three.js-WebGL-black?logo=three.js)](https://threejs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-green?logo=node.js)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.21-grey?logo=express)](https://expressjs.com/)
-[![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange?logo=pwa)](https://web.dev/progressive-web-apps/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+## Architecture
 
----
+React 19, TypeScript, Vinext/Vite, Three.js/React Three Fiber, shadcn/Radix, Leaflet, Vitest. API handlers target the existing Sites Worker runtime, not an additional Express service.
 
-## 🌟 Overview
+- `lib/weather/provider.ts`: real Open-Meteo normalization; absent optional values remain null.
+- `lib/weather/client.ts`: bounded public-provider failover and abort handling. No synthetic live fallback; no failover on 4xx/rate limits.
+- `lib/weather/engine.ts`: WMO condition mapping, selected-location timezone, sunrise/sunset, hemisphere seasons and geographic conversion.
+- `lib/weather/director.ts`: shared world targets, smooth numeric interpolation, independent weighted Life Engine, priorities, cooldowns, interrupts and accessory intent.
+- `components/weather/WorldView.tsx`: capability check; lazy-loads the 3D world only when WebGL2 is available.
+- `WorldScene.tsx`: sky, ground, clouds, rain/snow, fog, celestial bodies, lighting, quality tiers and runtime render metrics.
+- `FonModelAdapter.tsx`, `FonProxy.tsx`, `FonAccessories.tsx`: replaceable rig/animation boundary, temporary transforms, named attachment support.
+- `useAtmosphereAudio.ts`: opt-in synthesized rain/wind/night ambience with gain ramps and hidden-tab suspension.
+- `WeatherApp.tsx`: forecast, search, settings, local saved places, request cancellation, explicit location permission.
+- `Explore.tsx`: lazy-loaded globe, radar and trends; exact-value table accompanies charts.
 
-**DuckingFon** is not just another weather dashboard displaying cold grids of numbers. It is an immersive, production-quality worldwide weather application and portfolio showcase designed to demonstrate advanced frontend development, responsive UI/UX, 3D graphics, procedural audio synthesis, and scalable Node.js backend architecture.
+## Run and verify
 
-At the heart of DuckingFon is **Fon the Weather Duck** — an original, stylized 3D mascot that physically and emotionally adapts to weather, temperature, season, and time of day. When it rains, Fon puts on a raincoat and lifts an umbrella. When heat waves strike, Fon fans itself and wears sunglasses. In sub-zero blizzards, Fon shivers in a knitted beanie and fluttering scarf.
-
----
-
-## ✨ Key Features
-
-### 1. 🦆 Living 3D Mascot: "Fon"
-- **High-Fidelity Procedural 3D Model**: Built with Three.js with soft-lit cartoon shaders, articulated beak, feathery tuft, and expressive eyes.
-- **Cursor Tracking**: Fon's eyes and head calculate real-time spherical interpolation (`lerp`) to track the user's cursor across the viewport with natural curiosity.
-- **25+ Curated Weather States**: A centralized state matrix dynamically selects clothing, poses, expressions, and dialogue based on:
-  $$\text{Condition (WMO)} + \text{Temperature} + \text{TimeOfDay} + \text{Season} + \text{Severity} \longrightarrow \text{Mascot \& Atmospheric State}$$
-- **Microinteractions**: Click reactions (Fon hops up with a cheerful wing flap and confetti burst), blinking cycles, and breathing idle motions.
-- **2D Vector Fallback**: High-performance SVG fallback for low-power devices and users with `prefers-reduced-motion`.
-
-### 2. 🌌 Strategic 3D Atmospheric Particle Engine
-- **Rain & Downpours**: Angled velocity streaks with ground ripples and wind skew.
-- **Snow & Blizzards**: Volumetric flakes drifting with gentle sinusoidal turbulence.
-- **Thunderstorms**: Screen-space strobe lightning flashes illuminating the scene.
-- **Clear Nights**: Realistic twinkling starfields with accurate astronomical moon phase calculations.
-- **Sun Rays**: Golden hour light motes floating in sunlight.
-
-### 3. 🗺️ Live Precipitation Radar & Interactive 3D Globe
-- **Global Weather Radar**: Embedded Leaflet map integrated with **RainViewer's live global radar API**. Includes an animated 2-hour time-lapse player with play/pause and scrubber controls.
-- **Interactive 3D Earth Globe**: A lightweight Three.js Earth sphere with continent textures, day/night lighting, and interactive pins for world capitals (London, Tokyo, New York, Lahore, Dubai, Paris, Sydney, Cairo).
-
-### 4. 🔊 Procedural Ambient Audio Engine
-- **100% Synthesized via Web Audio API**: Requires **0 KB of external audio downloads** and loads with zero latency.
-- Generates realistic, soothing pink-noise rain, low-pass filtered thunder bursts, bandpass-modulated wind gusts, and nocturnal cricket soundscapes.
-- Safe browser audio policies: Muted by default, volume slider, and instant mute control.
-
-### 5. 📊 Deep Weather Analytics & Context-Aware Cards
-- **24h & 48h Hourly Forecast Slider**: Horizontal scrubbable strip with temperature curves, condition icons, rain probabilities, and wind speeds.
-- **7-Day Trend Chart**: Proportional horizontal temperature range bars comparing daily highs and lows.
-- **24-Hour Temperature Bezier Curve**: Smooth responsive SVG chart with interactive hover points.
-- **Precipitation Probability Chart**: 16-hour bar chart highlighting rain/snow likelihood.
-- **Atmospheric Grid**:
-  - *Wind & Gusts Card*: With animated rotating compass rose.
-  - *Humidity & Dew Point Card*: With comfort ratings.
-  - *UV Index Card*: With safety advice and color-coded meter.
-  - *Air Quality Card*: US-AQI scale, PM2.5, PM10, and health warnings.
-  - *Visibility & Pressure Cards*: Distance metrics and barometric trends.
-  - *Sun & Moon Cycle*: Real sunrise/sunset solar arc countdown + lunar phase illumination.
-
-### 6. 📱 PWA-Ready & Accessibility First
-- **PWA Manifest & Service Worker**: Installable on desktop and mobile home screens with offline shell caching.
-- **WCAG 2.1 AA Compliance**: Keyboard navigation, ARIA live regions, semantic HTML, and high contrast typography.
-- **Saved Favorites**: Quick-access pills bar for favorite cities (stored locally with backend cloud sync architecture ready).
-
----
-
-## 🛠️ Architecture & Tech Stack
+Install with `scripts/install-pnpm.sh`; respect pnpm-workspace.yaml supply-chain policy. In the managed workspace use `sites-preview start "$PWD"` and its supervised URL. Outside that workspace use `pnpm dev`.
 
 ```
-duckingfon/
-├── client/                     # React 18 + Vite Frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── 3d/             # Three.js Mascot, Particles, Globe & 2D Fallback
-│   │   │   ├── map/            # Leaflet + RainViewer Radar Map
-│   │   │   ├── charts/         # SVG Temperature & Precipitation Charts
-│   │   │   ├── weather/        # Hero, Forecasts, and Detail Cards
-│   │   │   ├── search/         # Autocomplete SearchBar & Favorites Bar
-│   │   │   ├── layout/         # Header, Footer, Logo
-│   │   │   ├── legal/          # Modals & Cookie Consent Banner
-│   │   │   └── ui/             # LoadingScreen & ErrorState
-│   │   ├── context/            # WeatherContext, ThemeContext, AudioContext
-│   │   ├── engine/             # WeatherStateEngine & ProceduralAudioEngine
-│   │   └── services/           # REST API & LocalStorage Services
-│   └── public/                 # PWA Manifest, Icons, and Service Worker
-└── server/                     # Node.js + Express Backend Proxy
-    ├── src/
-    │   ├── services/           # Open-Meteo Client, Caching, Geocoding & Alerts
-    │   ├── routes/             # Weather, Geocoding, and Auth routes
-    │   └── middleware/         # Helmet, CORS, Rate-Limiter & ErrorHandler
-    └── .env                    # Port & Caching Configuration
+pnpm exec vitest run
+pnpm exec tsc --noEmit
+pnpm audit
+pnpm build
 ```
 
----
+`tests/browser-checks.mjs` contains reusable checks for the supported browser tool's Playwright surface. It is not a separately installed Playwright CI runner. `QA.md` records the actual checks and limitations.
 
-## 🚀 Quick Start
+## Development controls
 
-### Prerequisites
-- **Node.js**: v18.0.0 or higher (v20+ recommended)
-- **npm**: v9.0.0 or higher
+`/scene-lab` exposes ten weather states, five times, four seasons, temperature, wind, precipitation and cloud sliders, with a director/action readout. All readings are explicitly simulated. `/viewport-lab?w=390&h=844` embeds the app at exact CSS viewport dimensions for layout checks. Both routes reject production access. The live homepage never uses the development fixture.
 
-### 1. Clone & Install Dependencies
-```bash
-# In the root repository
-npm run install:all
-```
-*(Or install inside `server` and `client` individually with `npm install`)*
+## Final character
 
-### 2. Start Concurrent Development Servers
-```bash
-npm run dev
-```
-- **Frontend**: `http://localhost:5173`
-- **Backend API**: `http://localhost:5000`
+The Life Engine is independent of the character renderer. See `docs/FON_MODEL_CONTRACT.md` for exact export, clip, anchor and replacement instructions, and `docs/FON_CANONICAL_REFERENCE.md` for the official appearance lock. The adapter normalizes model bounds and source orientation; the Life Engine remains independent. Put the final rig at `public/models/fon/Fon.glb`, configure its clip aliases and anchors, then switch `USE_PRODUCTION_FON` to true. The adapter uses a cloned skeleton, AnimationMixer cross-fades and proxy fallback. Final asset integration requires real model/GPU QA.
 
----
+## Providers and attribution
 
-## 🔌 Backend API Reference
+- Open-Meteo weather: https://open-meteo.com/en/docs
+- Open-Meteo geocoding: https://open-meteo.com/en/docs/geocoding-api
+- RainViewer: https://www.rainviewer.com/api/weather-maps-api.html — past observations only, maximum zoom 7, Universal Blue scheme; honest unavailable state. The current free service is for personal/educational use; review terms before commercial launch.
+- OpenStreetMap: https://www.openstreetmap.org/copyright and https://operations.osmfoundation.org/policies/tiles/ — no bulk downloads or offline tile caching.
+- Earth: https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg — static imagery, not live clouds. Confirm upstream image licensing for commercial distribution.
+- Logo and Fon artwork: user supplied, unchanged, presented with CSS crops.
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/health` | `GET` | Health check & system status |
-| `/api/weather?lat={lat}&lon={lon}&units={metric\|imperial}` | `GET` | Current, hourly, 7-day forecast, air quality, sun/moon, and alerts |
-| `/api/geocoding/search?query={city}` | `GET` | Worldwide fuzzy city search with timezone & coordinates |
-| `/api/geocoding/reverse?lat={lat}&lon={lon}` | `GET` | Reverse geocode coordinates to nearest city & country |
-| `/api/auth/login` | `POST` | Demo user sign in & preferences sync |
+No provider keys are needed for this configuration. A paid weather plan requires a server-side customer endpoint/key; do not expose it through public client fallback. Provider attribution is visible.
 
----
+## Privacy and boundaries
 
-## 📜 Attributions & Data Sources
+No authentication, accounts, ads, analytics SDKs or application database. Preferences/saved places stay in localStorage. Users can remove saved places or clear browser site data. Sound starts muted and requires a gesture. Location permission is requested only by the location button; manual city search remains available. Coordinate requests reach the weather provider, and map-area requests reach map/radar providers.
 
-- **Meteorological Data & Geocoding**: [Open-Meteo](https://open-meteo.com) (Under CC BY 4.0)
-- **Global Precipitation Radar**: [RainViewer](https://www.rainviewer.com)
-- **Map Tiles & Data**: © [OpenStreetMap](https://www.openstreetmap.org) contributors, [CARTO](https://carto.com)
-- **Icons**: [Lucide React](https://lucide.dev)
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — feel free to explore, customize, and build upon it!
+See `docs/SECURITY.md`, `docs/FON_MODEL_CONTRACT.md`, `docs/PORTFOLIO_OUTLINE.md` and `QA.md`. This implementation is not a claim of production cinematic quality, measured mobile GPU performance or completed final-rig validation.

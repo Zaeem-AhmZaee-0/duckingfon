@@ -1,0 +1,12 @@
+'use client';
+import {useMemo,useRef} from 'react';
+import {useFrame} from '@react-three/fiber';
+import * as T from 'three';
+import type {DirectedWorld} from '@/lib/weather/director';
+/** Fixed terrain, not random decorations. Three ridgelines separate foreground and horizon. */
+function Ridge({layer}:{layer:number}){const geometry=useMemo(()=>{const g=new T.PlaneGeometry(110,15,64,1),p=g.attributes.position;for(let i=0;i<=64;i++){const x=p.getX(i),height=4+Math.sin(x*.16+layer)*1.8+Math.sin(x*.39+layer*2)*.65+Math.cos(x*.071)*3;p.setY(i,height);p.setY(i+65,-9)}g.computeVertexNormals();return g},[layer]);return <mesh geometry={geometry} position={[0,-1,-20-layer*14]}><meshStandardMaterial color={['#526e7c','#7493a1','#a1b5c1'][layer]} roughness={1}/></mesh>}
+export default function TerrainDepth({state,still,low}:{state:React.RefObject<DirectedWorld>;still:boolean;low:boolean}){const grass=useRef<T.InstancedMesh>(null),pebbles=useRef<T.InstancedMesh>(null);const count=low?32:100;const dummy=useMemo(()=>new T.Object3D(),[]);
+ useFrame(({clock},dt)=>{const w=state.current;if(grass.current){for(let i=0;i<count;i++){const angle=i*2.39996,radius=1.55+(i%17)/17*2.1,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius*.7;dummy.position.set(x,.22,z);dummy.rotation.set(0,angle,still?0:Math.sin(clock.elapsedTime*1.8+i)*Math.min(w.wind/220,.35));dummy.scale.set(.05,.2+(i%7)*.06,.055);dummy.updateMatrix();grass.current.setMatrixAt(i,dummy.matrix)}grass.current.instanceMatrix.needsUpdate=true;const mat=grass.current.material as T.MeshStandardMaterial;const target=new T.Color(w.season==='Autumn'?'#a19454':'#6c9662').lerp(new T.Color('#e6edf2'),w.snowCover);mat.color.lerp(target,1-Math.exp(-Math.min(dt,.1)*.7));}
+ if(pebbles.current&&pebbles.current.userData.ready!==true){for(let i=0;i<24;i++){const a=i*2.39996;dummy.position.set(Math.cos(a)*3.3,.05,Math.sin(a)*2.3);dummy.rotation.set(a,a*.4,0);dummy.scale.set(.12+(i%3)*.04,.08,.14);dummy.updateMatrix();pebbles.current.setMatrixAt(i,dummy.matrix)}pebbles.current.instanceMatrix.needsUpdate=true;pebbles.current.userData.ready=true}});
+ return <>{[0,1,2].map(layer=><Ridge key={layer} layer={layer}/>)}<instancedMesh ref={grass} args={[undefined,undefined,count]} frustumCulled={false}><coneGeometry args={[1,1,4]}/><meshStandardMaterial color="#6c9662" roughness={1}/></instancedMesh><instancedMesh ref={pebbles} args={[undefined,undefined,24]} frustumCulled={false}><icosahedronGeometry args={[1,1]}/><meshStandardMaterial color="#8c999b" roughness={.85}/></instancedMesh></>}
+
